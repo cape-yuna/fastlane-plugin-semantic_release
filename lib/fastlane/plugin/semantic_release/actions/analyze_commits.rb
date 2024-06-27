@@ -197,7 +197,7 @@ module Fastlane
         git_command = "git rev-list --max-parents=0 HEAD"
         # Begining of the branch is taken for codepush analysis
         hash_lines = Actions.sh("#{git_command} | wc -l", log: params[:debug]).chomp
-        hash = Actions.sh(git_command, log: params[:debug]).chomp
+        hash = Actions.sh(git_command, log: params[:debug]).lines.first.chomp
         next_major = 0
         next_minor = 0
         next_patch = 0
