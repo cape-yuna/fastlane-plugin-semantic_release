@@ -204,7 +204,7 @@ module Fastlane
         last_incompatible_codepush_version = '0.0.0'
 
         if hash_lines.to_i > 1
-          if !params[:allow_multiple_roots]
+          unless params[:allow_multiple_roots]
             UI.error("#{git_command} resulted to more than 1 hash")
             UI.error('This usualy happens when you pull only part of a git history. Check out how you pull the repo! "git fetch" should be enough.')
             Actions.sh(git_command, log: true).chomp
