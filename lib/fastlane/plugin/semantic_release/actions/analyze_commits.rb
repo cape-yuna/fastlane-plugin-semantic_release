@@ -197,17 +197,21 @@ module Fastlane
         git_command = "git rev-list --max-parents=0 HEAD"
         # Begining of the branch is taken for codepush analysis
         hash_lines = Actions.sh("#{git_command} | wc -l", log: params[:debug]).chomp
-        hash = Actions.sh(git_command, log: params[:debug]).chomp
+        hash = Actions.sh(git_command, log: params[:debug]).lines.first.chomp
         next_major = 0
         next_minor = 0
         next_patch = 0
         last_incompatible_codepush_version = '0.0.0'
 
         if hash_lines.to_i > 1
-          UI.error("#{git_command} resulted to more than 1 hash")
-          UI.error('This usualy happens when you pull only part of a git history. Check out how you pull the repo! "git fetch" should be enough.')
-          Actions.sh(git_command, log: true).chomp
-          return false
+          unless params[:allow_multiple_roots]
+            UI.error("#{git_command} resulted to more than 1 hash")
+            UI.error('This usualy happens when you pull only part of a git history. Check out how you pull the repo! "git fetch" should be enough.')
+            Actions.sh(git_command, log: true).chomp
+            return false
+          end
+          UI.message("#{git_command} resulted to more than 1 hash.")
+          UI.message("Ignoring because you specified the :allow_multiple_roots param.")
         end
 
         # Get commits log between last version and head
@@ -338,6 +342,13 @@ module Fastlane
             description: "To ignore certain scopes when calculating releases",
             default_value: [],
             type: Array,
+            optional: true
+          ),
+          FastlaneCore::ConfigItem.new(
+            key: :allow_multiple_roots,
+            description: "Allows operation on a repo with multiple roots in its history",
+            default_value: false,
+            type: Boolean,
             optional: true
           ),
           FastlaneCore::ConfigItem.new(
